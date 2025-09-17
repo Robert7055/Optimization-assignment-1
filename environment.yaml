@@ -1,7 +1,7 @@
 # template of an environment file for conda
 # update as needed
 
-name: gurobi-opt
+name: Optimization
 channels:
   - conda-forge
   - defaults
@@ -10,8 +10,8 @@ dependencies:
   - gurobi            # gurobi + gurobipy from the official channel
   - numpy>=1.26
   - pandas>=2.1
-  - json
-  - csv
+  #- json
+  #- csv
   - matplotlib>=3.8
   - seaborn>=0.13
   - jupyterlab>=4.2
