@@ -3,5 +3,8 @@ import csv
 import pandas as pd
 from pathlib import Path
 
-class DataLoader():
+#class DataLoader():
+#    """Placeholder for DataProcessor class."""
+
+class DataProcessor:
     """Placeholder for DataProcessor class."""
