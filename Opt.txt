@@ -1,0 +1,6 @@
+
+Input data:
+p = spotprice
+g = tariff
+PV_prod = pv production
+E_min = Energy minimum 
