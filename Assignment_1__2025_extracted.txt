@@ -1,0 +1,199 @@
+46750 - Optimization in Modern Power Systems
+Assignment 1: Demand-Side Flexibility in Active Distribution Grids
+Deadline: October 11, 2025 at 00:01am
+Instructions and deliverables:
+This assignment should be carried out in groups of two to three students . Each group
+should provide a single submission, including the following:
+•Concise report using the recommended Latex Template, submitted in DTU Learn. The
+report should include:
+–Concise answers to each question, including: rigorous and compact mathematical
+formulations, with definition of all newnotations and description of all newequations,
+motivation and description of relevant modeling steps, relevant numerical analysis
+and insights, adequate visual aids and tables.
+–Individual participation table, summarizing the contribution (in %) of each student,
+including coding, model formulation, writing, result analysis, data visualization, re-
+view and formatting, etc.
+•Signed group contract , using the provided guidelines and template, submitted in DTU
+Learn.
+•Working, well-documented and well-structured code , in the programming lan-
+guage of your choice, should be developed and submitted directly in your group’s reposi-
+tory in Github classroom. Each group can sign register for this assignment through this
+link. Further instructions are provided in the repository README file about expectations
+regarding code documentation and reproducibility.
+Grading:
+Each group will receive a grade between 0-100 points , as follows:
+This grade will be adjusted individually based on each student’s overall participation, as
+reported in the participation table, and the adjustment rules illustrated in Figure 1. This indi-
+vidual grade will count towards 40% of the final grade.
+Learning objectives:
+This assignment aims at evaluating the understanding fundamental optimization concepts, and
+their application to simple decision-making problems in power systems (Modeling steps 1-5).
+Figure 2 summarizes the learning objectives (LOs) assessed.
+Question 1 Question 2
+(a) i 6points 7points
+ii 5points 8points
+iii 6points -
+iv 3points -
+v 6points -
+(b) i 4points 7points
+ii 4points 7points
+iii 4points 3points
+iv 1points 8points
+v 4points -
+(c) i 4points -
+ii 4points -
+iii 4points -
+iv 1points -
+v 4points -
+Total 60 points 40 points
+Table 1: Points repartition
+Figure 1: Individual grade adjustment ratios, depending on % of total participation and number
+of students/group
+Data provided:
+All relevant data is provided in a structured dataset in Github classroom, including the following
+individual and system-level techno-economic parameters:
+•Techno-economic characteristics of flexible appliances and loads: maximum and mini-
+mum hourly load (in kWh/h), hourly PV production profile (in kWh/h), marginal PV
+production cost (in DKK/kWh) energy storage capacity (in KWh), maximum charg-
+ing/discharging power (in kWh/h) and charging/discharging efficiencies (-) of battery,
+and capital investment cost (in DKK/kWh of energy storage capacity).
+•Flexibility preferences (multiple scenarios): minimum daily required energy consumption
+(in kWh), reference hourly profile of preferred energy consumptions (in kWh/h).
+Page 2
+Figure 2: List of LOs assessed in Assignment 1 and instructions to demonstrate them.
+Page 3
+•System-level cost structures (multiple scenarios): hourly profiles of non-negative distribu-
+tion grid tariffs and electricity prices (in DKK/kWh)
+Problem Statement
+The objective of this assignment is to model and analyze an active distribution network with
+flexible residential consumers. You will build consumer-level flexibility models, analyze the
+structure of these optimization problems and derive meaningful techno-economic insights for
+flexible consumers.
+1.Consumer-level flexibility models
+We consider the individual load scheduling problem of a single flexible consumer, and an-
+alyze how different types of flexible assets, flexibility preferences, and cost structures may
+impact its flexibility and profits.
+(a) We first consider that this consumer has a single (fully) flexible load and a rooftop
+PV panel. They want to utilize their flexible load and rooftop PV production to
+minimize their daily energy procurement cost. Their maximum hourly PV production
+is perfectly known, but can be fully curtailed. Their load is fully flexible in each hour,
+however, the consumer wants to satisfy a minimum (total) energy consumption at the
+end of the day. They can sell/buy electricity to/from the distribution grid at an hourly
+electricity price, but must pay an hourly grid tariff fee for all net imports and exports.
+We analyze how these cost structures can impact their flexibility and profits.
+i. (6 points) Formulate the optimization problem of a consumer, describing its main
+components (input data, decision variables, objective function, constraints) and
+properties.
+ii. (5 points) Formulate the dual problem, Lagrangian, and KKT conditions of this
+optimization problem. Describe their properties.
+iii. (6 points) Without numerically solving this optimization problem, analyze its
+structure and discuss qualitatively the characteristics of its optimal solutions.
+Which cost components and constraints have the most impact on the solutions?
+Which constraint are binding at optimality? How does the input data impact the
+optimal solutions? In particular, compare the cases in which: the electricity prices
+and grid tariffs are constant through the day or vary hourly. For which values of
+the cost components, can you conclude that this optimization problem is equiv-
+alent to a simpler optimization one? Tip: you can use the dual formulation and
+KKT conditions to motivate your analysis
+iv. (3 points) Implement this optimization problem in a programming language of
+your choice. Provide a well-documented working code.
+v. (6 points) Construct relevant scenarios of system-level cost structures based on
+the data provided, solve this optimization problem over these scenarios, analyze
+its optimal solutions (primal and dual) and answer the following question: How do
+Page 4
+cost structures impact the consumers flexibility and profits? Present your insights
+in a compact manner using adequate visual aids. Do these solutions align with
+your analysis from Question 1.(a).iii.?
+(b) We now consider that the consumer described in Question 1.(a) does not have a strict
+daily energy consumption requirement. Instead, it is interested, in minimizing the
+discomfort uncured from shifting its flexible load at each hour compared to a reference
+hourly load profile, in addition to minimizing its energy procurement cost through the
+day. And we analyze the impact on its flexibility and profits.
+i. (4 points) Adapt the optimization problem formulated in Question 1.(a) to re-
+flect these new flexibility preferences. Introduce (if necessary) new constraints
+objective(s), or input parameters. Define all new notations, and motivate these
+modeling choices.
+ii. (4 points) Formulate the dual problem, Lagrangian, and KKT conditions of this
+updated optimization problem. Describe their properties.
+iii. (4 points) Without numerically solving this optimization problem, discuss quali-
+tatively how these changes impact the structure of this optimization problem, and
+the characteristics of its optimal solutions. Do the findings in Question 1.(a).iii
+still hold? How do different flexibility preferences and cost structures impact the
+optimal solutions? What can you infer about which constraints are binding at
+optimality?
+iv. (1 point) Implement this optimization problem in a programming language of your
+choice. Provide a well-documented working code.
+v. (4 points) Construct relevant scenarios of consumer flexibility preferences based on
+the data provided1, solve this optimization problem over these scenarios, analyze
+its optimal solutions (primal and dual) and answer the following question: How do
+the flexibility preferences of consumers impact their flexibility and profits? Present
+your insights in a compact manner using adequate visual aids. Do these solutions
+align with your analysis from Question 1.(b).iii.?
+(c) We now consider that this consumer has installed a battery, and analyze the impact
+on its flexibility and profits.
+i. (4 points) Adapt the optimization problem formulated in Question 1.(b) to include
+this new flexible asset. Describe how to handle boundary conditions on the state
+of charge of the battery, and avoid that it is fully depleted at the end of the day.
+Motive these modeling choices.
+ii. (4 points) Formulate the dual problem, Lagrangian, and KKT conditions of this
+updated optimization problem. Describe their properties.
+iii. (4 points) Discuss qualitatively what economic benefits the consumers can derive
+from this battery and how it can utilize it. Discuss in which cases these benefits
+1If you introduced new input parameters, specify the value(s) chosen
+Page 5
+are expected to be more or less significant, e.g., depending on the hourly profiles
+of reference load, PV production, grid tariffs and electricity prices, or different
+relative cost or capacity values.
+iv. (1 point) Implement this optimization problem in a programming language of your
+choice. Provide a well-documented working code.
+v. (4 points) Solve this updated optimization problem over relevant scenarios of con-
+sumer flexibility preferences and cost structures (consistent with Questions 1.(a)
+and 1.(b)), analyze its optimal solutions (primal and dual) and answer this ques-
+tion: How does this additional flexibility impact the consumer’s load scheduling
+and profits? Present your insights in a compact manner using adequate visual
+aids. Do these solutions align with your analysis from Question 1.(c).iii.?
+2.Value of demand-side flexibility
+Building on the individual models derived in Question 1, we further analyze the value of
+demand-side flexibility for various types of consumers, and derive actionable operational
+and investment insights.
+(a) We consider the flexible consumer described in Question 1.(b), and conduct a techno-
+economic analysis of the value of flexibility, through duality.
+i. (7 points) Describe in your own words the techno-economic meaning of the dual
+formulation of the cost-minimization optimization problem of this consumer, de-
+rived in Question 1.(b), including the dual variables associated with key con-
+straints, and the Lagrange function. What economic signal does the value at
+optimality of these dual variables provide?
+ii. (8 points) Considering that this consumer wants to participate in the day-ahead
+electricity market, derive their hourly demand (or supply) curve, representing their
+marginal willingness to pay (or marginal opportunity cost) for purchasing (selling)
+1 additional MWh of electricity in the market. Tip: you can use the KKT con-
+ditions derived in Question 1.(b) to find conditions linking the optimal quantity
+purchased/sold on the market for varying electricity prices.
+(b) This flexible consumer is now considering investing in a battery, and wants to eval-
+uate which investments are more profitable. We consider the following assumptions:
+i) the consumer can only invest in a battery which technical characteristics (charg-
+ing/discharging power and energy storage capacity) scale linearly and uniformly with
+the ones of the battery considered in Question 1.(b); ii) charging/discharging efficien-
+cies remain the same regardless of the battery size; iii) the capital cost of purchasing
+and installing a battery scales linearly with its energy storage capacity; iv) the battery
+has a life of 10 years, and has no degradation over this period; iii) all input parameters
+(e.g. reference load profiles, hourly electricity prices, PV production, etc.) remain the
+same, and no discount factors are applied to future costs/profits over this time horizon.
+i. (7 points) Based on the stated assumptions, formulate this consumer’s investment
+Page 6
+decision-making problem as an optimization problem.
+ii. (7 points) Discuss qualitatively how these assumptions impact the structure of
+the optimization problem and its optimal solutions. How could you lift these
+assumptions (no mathematical formulation required)? How do you expect the
+optimal solutions to change if these assumptions are lifted? What computational
+challenges may lifting these assumptions raise?
+iii. (3 points) Implement this optimization problem in a programming language of
+your choice. Provide a well-documented working code.
+iv. (8 points) Design and conduct a numerical experiment to quantify the profitability
+of installing a battery, over relevant scenarios of consumer preferences and cost
+structures. Tip: you can leverage the analysis in Questions 1.(a) - 1.(c). Describe
+and motivate the scenarios considered and the metrics to be evaluated in order
+to derive actionable insights for various types of flexible consumers. Present these
+insights in a concise manner, using adequate visual aids to support them. Discuss
+the potential limitations of this analysis.
+Page 7

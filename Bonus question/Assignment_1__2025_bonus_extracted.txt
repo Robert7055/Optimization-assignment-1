@@ -1,0 +1,42 @@
+46750 - Optimization in Modern Power Systems
+Assignment 1: Demand-Side Flexibility in Active Distribution Grids
+(Bonus Question)
+This bonus assignment corresponds to Question 2.(a) of Assignment 1. and should
+be carried out in the same groups as Assignment 1 .
+All data provided, problem statement and learning objectives provided in Assign-
+ment 1, Questions 1.(a) - 1.(c) are still valid.
+Each group should submit a single report using the recommended Latex Template in DTU
+Learn, including concise answers to each question (rigorous and compact mathematical formu-
+lations, with deﬁnition of all notations and description of all equations - including those intro-
+duced in the main report of Assignment 1 and reused in this question, description of modeling
+steps, relevant insights, adequate visual aids and tables), and an individual participation
+table , summarizing the contribution (in %) of each student in Question 2.(a).
+Grading: Each group will receive a grade between 0-15 points . These points will be adjusted
+individually based on each student’s contribution to Question 2.(a), as reported in the partici-
+pation table, and the adjustment rules illustrated in Figure 1, and will be added (as a bonus)
+to their individual grade for Assignment 1. The resulting individual grade for assignment 1 will
+count towards 40% of the ﬁnal grade.
+Figure 1: Individual grade adjustment ratios, depending on % of total participation and number
+of students/group
+2.Value of demand-side ﬂexibility
+Building on the individual models derived in Question 1, we further analyze the value of
+demand-side ﬂexibility for various types of consumers, and derive actionable operational
+and investment insights.
+(a)This question is now optional, and all points have been redistributed be-
+tween questions 1.(a)-1.(c). All bonus points scored in this question will
+be added to your grade for assignment 1. Please submit your answers for
+Question 2.(a) separately (no deadline).
+We consider the ﬂexible consumer described in Question 1.(b), and conduct a techno-
+economic analysis of the value of ﬂexibility, through duality.
+i.(7 points) Describe in your own words the techno-economic meaning of the dual
+formulation of the cost-minimization optimization problem of this consumer, de-
+rived in Question 1.(b), including the dual variables associated with key con-
+straints, and the Lagrange function. What economic signal does the value at
+optimality of these dual variables provide?
+ii.(8 points) Considering that this consumer wants to participate in the day-ahead
+electricity market, derive their hourly demand (or supply) curve, representing their
+marginal willingness to pay (or marginal opportunity cost) for purchasing (selling)
+1 additional MWh of electricity in the market. Tip: you can use the KKT con-
+ditions derived in Question 1.(b) to ﬁnd conditions linking the optimal quantity
+purchased/sold on the market for varying electricity prices.
+Page 5

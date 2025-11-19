@@ -1,0 +1,230 @@
+QUESTION 2A: VALUE OF DEMAND-SIDE FLEXIBILITY THROUGH DUALITY
+================================================================
+
+PROBLEM UNDERSTANDING
+--------------------
+Question 2a builds on Question 1.B (flexible consumer with discomfort penalty) and has two parts:
+
+Part (i) - 7 points:
+- Explain the techno-economic meaning of the dual formulation
+- Describe dual variables associated with key constraints
+- Explain the Lagrange function
+- Interpret the economic signals provided by dual variable values at optimality
+
+Part (ii) - 8 points:
+- Derive hourly demand/supply curves for day-ahead market participation
+- Represent marginal willingness to pay (demand) or marginal opportunity cost (supply)
+- Use KKT conditions to link optimal quantity to varying electricity prices
+
+
+PRIMAL PROBLEM FORMULATION (from Question 1.B)
+----------------------------------------------
+Decision Variables:
+- D_t: Load consumption at hour t (kW)
+- C_t: PV curtailment at hour t (kW)
+- P_imp_t: Grid import at hour t (kW)
+- P_exp_t: Grid export at hour t (kW)
+- L_t: Discomfort (absolute deviation from reference) at hour t (kW)
+
+Objective Function:
+min Σ_t [P_imp_t * (τ_imp + λ_t) - P_exp_t * (λ_t - τ_exp)] + α * Σ_t L_t
+
+Where:
+- τ_imp: Import tariff (DKK/kWh)
+- τ_exp: Export tariff (DKK/kWh)
+- λ_t: Electricity price at hour t (DKK/kWh)
+- α: Discomfort penalty parameter (DKK/kW)
+
+Constraints:
+1. Power balance: P_imp_t - P_exp_t = D_t - P^PV_t + C_t  ∀t
+2. PV curtailment limit: C_t ≤ P^PV_t  ∀t
+3. Discomfort (absolute value): L_t ≥ D_t - D_ref_t  ∀t
+4. Discomfort (absolute value): L_t ≥ -(D_t - D_ref_t)  ∀t
+5. Daily energy: Σ_t D_t = Σ_t D_ref_t
+6. Variable bounds: 0 ≤ D_t ≤ D_max, 0 ≤ P_imp_t ≤ P_imp_max, 0 ≤ P_exp_t ≤ P_exp_max, C_t ≥ 0, L_t ≥ 0
+
+
+DUAL FORMULATION & LAGRANGIAN
+-----------------------------
+The Lagrangian function combines the objective with all constraints using dual variables (Lagrange multipliers):
+
+L(primal vars, dual vars) = 
+    Objective 
+    + Σ_t μ_t * (D_t - P^PV_t + C_t - P_imp_t + P_exp_t)  [power balance]
+    + Σ_t ν_t * (C_t - P^PV_t)  [PV curtailment]
+    + Σ_t ω1_t * (D_t - D_ref_t - L_t)  [discomfort upper]
+    + Σ_t ω2_t * (-D_t + D_ref_t - L_t)  [discomfort lower]
+    + γ * (Σ_t D_ref_t - Σ_t D_t)  [daily energy]
+    + (bound constraints with complementarity conditions)
+
+Dual Variables (Lagrange Multipliers):
+- μ_t: Power balance dual (energy value/shadow price at hour t)
+- ν_t: PV curtailment dual (value of additional PV capacity)
+- ω1_t, ω2_t: Discomfort constraint duals (marginal cost of comfort deviation)
+
+Note: No daily energy constraint exists - deviations from reference load are penalized through discomfort cost in objective
+
+
+KKT CONDITIONS
+--------------
+The KKT conditions provide optimality conditions for this LP:
+
+1. Stationarity (gradient = 0):
+   ∂L/∂D_t = 0: μ_t + ω1_t - ω2_t - γ = 0
+   ∂L/∂P_imp_t = 0: (τ_imp + λ_t) - μ_t = 0  →  μ_t = τ_imp + λ_t
+   ∂L/∂P_exp_t = 0: -(λ_t - τ_exp) + μ_t = 0  →  μ_t = λ_t - τ_exp
+   ∂L/∂C_t = 0: μ_t + ν_t = 0
+   ∂L/∂L_t = 0: α - ω1_t - ω2_t = 0
+
+2. Primal feasibility: All constraints satisfied
+
+3. Dual feasibility: All dual variables ≥ 0 (for inequality constraints)
+
+4. Complementary slackness: μ_t * (slack) = 0 for each constraint
+
+
+ECONOMIC INTERPRETATION (Part i)
+--------------------------------
+Dual Variables Economic Meaning:
+
+1. μ_t (Power Balance Dual):
+   - Marginal energy value/shadow price at hour t
+   - Represents the marginal cost reduction if 1 additional kWh becomes available at hour t
+   - When importing: μ_t = τ_imp + λ_t (full import cost)
+   - When exporting: μ_t = λ_t - τ_exp (net export value)
+   - When neither: μ_t lies between these bounds
+
+2. ν_t (PV Curtailment Dual):
+   - Marginal value of reducing PV curtailment (increasing usable PV)
+   - If ν_t > 0: PV curtailment is binding, additional PV would be valuable
+   - If ν_t = 0: PV not fully utilized, excess PV available
+
+3. ω1_t, ω2_t (Discomfort Duals):
+   - Marginal cost of enforcing comfort bounds
+   - If ω1_t > 0: Load is above reference, constraint binding
+   - If ω2_t > 0: Load is below reference, constraint binding
+   - Together with α, they determine the optimal load deviation
+   - These duals directly represent the penalty for deviating from reference load
+   - No separate daily energy constraint exists - all deviations penalized through L_t
+
+Lagrange Function Interpretation:
+- Converts constrained optimization to unconstrained
+- Optimal solution satisfies: gradient of Lagrangian = 0
+- At optimality: primal objective = dual objective (strong duality for LP)
+
+
+DEMAND/SUPPLY CURVE DERIVATION (Part ii)
+-----------------------------------------
+Goal: Derive P_imp_t(λ_t) and P_exp_t(λ_t) as functions of varying electricity price
+
+From KKT stationarity condition for P_imp_t:
+   μ_t = τ_imp + λ_t
+
+From KKT stationarity condition for P_exp_t:
+   μ_t = λ_t - τ_exp
+
+Key insight: The consumer's optimal import/export decision depends on comparing μ_t with the effective price.
+
+Demand Curve (Import):
+- Consumer imports when: μ_t ≤ τ_imp + λ_t
+- Marginal willingness to pay: WTP_t = μ_t - τ_imp
+- If λ_t ≤ WTP_t: Import up to max capacity
+- If λ_t > WTP_t: Import less or zero
+
+Supply Curve (Export):
+- Consumer exports when: μ_t ≥ λ_t - τ_exp
+- Marginal opportunity cost: MOC_t = μ_t + τ_exp
+- If λ_t ≥ MOC_t: Export up to max capacity
+- If λ_t < MOC_t: Export less or zero
+
+Methodology:
+1. For each hour t and for varying λ_t:
+   - Resolve optimization with new electricity price
+   - Record optimal P_imp_t and P_exp_t
+2. Plot P_imp_t vs λ_t (demand curve)
+3. Plot P_exp_t vs λ_t (supply curve)
+
+Expected curve shapes:
+- Demand curve: Downward sloping (higher price → less import)
+- Supply curve: Upward sloping (higher price → more export)
+- Discontinuities at switching points (import ↔ no trade ↔ export)
+
+
+IMPLEMENTATION APPROACH
+-----------------------
+Part (i) Implementation:
+1. Solve the primal problem for base case
+2. Extract dual variables from Gurobi model constraints (.Pi attribute)
+3. Create visualizations showing:
+   - μ_t vs time (energy shadow price across hours)
+   - Compare μ_t with λ_t + τ_imp and λ_t - τ_exp
+   - Show relationship with P_imp_t and P_exp_t
+4. Document in markdown cells:
+   - Technical interpretation of each dual variable
+   - Economic meaning and business insights
+   - How dual values guide operational decisions
+
+Part (ii) Implementation:
+1. For each hour t in {0, 1, ..., 23}:
+   a. Create price range: λ_test from min to max (e.g., -2 to 5 DKK/kWh)
+   b. For each λ_test value:
+      - Modify electricity_prices[t] = λ_test
+      - Resolve optimization
+      - Record P_imp_t[t] and P_exp_t[t]
+   c. Store results as demand/supply curve for hour t
+2. Visualize curves:
+   - Select representative hours (e.g., t=6, 12, 18)
+   - Plot P_imp_t vs λ_t (demand)
+   - Plot P_exp_t vs λ_t (supply)
+   - Identify price thresholds for import/export transitions
+3. Analysis:
+   - Calculate WTP and MOC from curves
+   - Compare across different hours
+   - Explain why curves differ by time of day
+
+
+EXPECTED OUTPUTS
+-----------------
+Part (i):
+- Plot: Dual variable μ_t across 24 hours
+- Plot: μ_t comparison with price bounds
+- Plot: Correlation between μ_t and import/export decisions
+- Text analysis: Economic interpretation of dual variables
+
+Part (ii):
+- Plots: Demand curves (P_imp vs λ) for selected hours
+- Plots: Supply curves (P_exp vs λ) for selected hours
+- Table: Price thresholds for import/export switching
+- Text analysis: Market participation strategy recommendations
+
+
+DATA REQUIREMENTS
+-----------------
+Use existing data from "./data/question_1b/":
+- appliance_params.json (PV capacity, load limits)
+- bus_params.json (tariffs, prices, grid limits)
+- consumer_params.json
+- DER_production.json (PV profiles)
+- usage_preferences.json (reference load, alpha)
+
+No new data files required.
+
+
+REUSABLE CODE FROM PART 1.B
+---------------------------
+- Data loading structure
+- Model setup (variables, objective, constraints)
+- Gurobi optimization execution
+- Result extraction and visualization patterns
+- Can directly reuse model formulation and add dual variable extraction
+
+
+VALIDATION CHECKS
+-----------------
+1. Strong duality: Primal objective = Dual bound (difference ≈ 0)
+2. Complementary slackness: μ_t * slack = 0 for each constraint
+3. KKT stationarity: Gradient conditions satisfied
+4. Demand curve: Downward sloping
+5. Supply curve: Upward sloping
+6. Continuity: Smooth transitions (or explain discontinuities)
+7. Physical feasibility: All flows within bounds
