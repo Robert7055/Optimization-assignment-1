@@ -1,69 +1,108 @@
-# Bonus Question 2.a - Report
+# Bonus Question 2.a
 
-**Course:** Optimization Assignment 1 (2025)  
-**Topic:** Demand-Side Flexibility Analysis using Duality Theory
-
----
-
-## Executive Summary
-
-This report analyzes demand-side flexibility for a prosumer (consumer with PV generation) participating in the day-ahead electricity market. We employ duality theory to:
-1. Extract economic insights from the optimization model's dual variables
-2. Derive hourly demand and supply curves for market participation
-
-**Key Findings:**
-- Energy shadow prices (μ_t) vary significantly by time-of-day, revealing when flexibility has highest value
-- The consumer exhibits clear price-responsive behavior, with distinct threshold prices for import/export decisions
-- Complete load flexibility is maintained through discomfort penalties rather than hard constraints
-- Market participation strategies can be derived directly from the demand/supply curves
+**Course:** 46750 - Optimization in Modern Power Systems  
+**Assignment:** Demand-Side Flexibility in Active Distribution Grids  
 
 ---
 
 ## Question 2.a Part (i): Dual Formulation and Economic Interpretation
 
-### Problem Setup
+### Task i: Mathematical Formulation
 
-We analyze the prosumer optimization problem from Question 1.B, which minimizes:
+Building on the optimization problem from Question 1.B, we analyze a prosumer with photovoltaic (PV) generation and flexible demand. The consumer minimizes total operational cost while maintaining comfort preferences:
 
-$$\min \sum_{t \in T} \left[ P_{imp,t} \cdot (\tau_{imp} + \lambda_t) - P_{exp,t} \cdot (\lambda_t - \tau_{exp}) \right] + \alpha \sum_{t \in T} L_t$$
+**Input Data:**
+- $T$: Number of hours (24 h)
+- $P^{PV}_t$: Hourly PV production for each hour $t \in T$
+- $\lambda_t$: Hourly electricity price for each hour $t \in T$
+- $\tau_{imp}$: Import grid tariff fee
+- $\tau_{exp}$: Export grid tariff fee
+- $D_{ref,t}$: Reference (preferred) demand profile
+- $D_{max}$: Maximum hourly demand
+- $P_{imp,max}$: Maximum import bound
+- $P_{exp,max}$: Maximum export bound
+- $\alpha$: Discomfort penalty coefficient
 
-Subject to:
-- **Power balance:** $P_{imp,t} - P_{exp,t} = D_t - P^{PV}_t + C_t, \quad \forall t$
-- **PV curtailment limit:** $C_t \leq P^{PV}_t, \quad \forall t$
-- **Discomfort tracking:** $L_t \geq |D_t - D_{ref,t}|, \quad \forall t$
-- **Variable bounds:** Non-negativity and capacity limits
+**Decision Variables:**
+- $D_t \geq 0$: Demand consumption for each hour $t \in T$ [kWh]
+- $C_t \geq 0$: Curtailment of PV for each hour $t \in T$ [kWh]
+- $P_{imp,t} \geq 0$: Grid import each hour $t \in T$ [kWh]
+- $P_{exp,t} \geq 0$: Grid export each hour $t \in T$ [kWh]
+- $L_t \geq 0$: Discomfort (absolute load deviation) for each hour $t \in T$ [kWh]
 
-**Note:** There is **no daily energy requirement constraint**. Deviations from reference load are penalized through the discomfort cost $\alpha \sum_t L_t$, allowing complete flexibility.
+**Objective Function:**
 
-### Lagrangian Formulation
+$$\min \sum_{t=1}^{T} \left[ P_{imp,t} \cdot (\tau_{imp} + \lambda_t) - P_{exp,t} \cdot (\lambda_t - \tau_{exp}) \right] + \alpha \sum_{t=1}^{T} L_t$$
 
-The Lagrangian function combines the objective with constraints using dual variables (Lagrange multipliers):
+**Constraints:**
 
-$$\mathcal{L}(x, \lambda) = f(x) + \sum_t \mu_t \cdot h_t^{power}(x) + \sum_t \nu_t \cdot h_t^{curtail}(x) + \sum_t (\omega_{1,t} + \omega_{2,t}) \cdot h_t^{discomfort}(x)$$
+Power balance:
+$$P_{imp,t} - P_{exp,t} = D_t - P^{PV}_t + C_t \quad \forall t \in T$$
 
-Where:
-- $\mu_t$: Dual variable for power balance constraint at hour $t$
-- $\nu_t$: Dual variable for PV curtailment limit at hour $t$
-- $\omega_{1,t}, \omega_{2,t}$: Dual variables for upper/lower discomfort bounds at hour $t$
+Curtailment limit:
+$$C_t \leq P^{PV}_t \quad \forall t \in T$$
 
-### KKT Stationarity Conditions
+Discomfort upper bound:
+$$L_t \geq D_t - D_{ref,t} \quad \forall t \in T$$
 
-At optimality, the gradient of the Lagrangian with respect to each primal variable equals zero:
+Discomfort lower bound:
+$$L_t \geq -(D_t - D_{ref,t}) \quad \forall t \in T$$
 
-1. **Import power:** $\frac{\partial \mathcal{L}}{\partial P_{imp,t}} = (\tau_{imp} + \lambda_t) - \mu_t = 0$
-   - **Interpretation:** When importing, $\mu_t = \tau_{imp} + \lambda_t$ (marginal cost equals full import cost)
+Variable bounds:
+$$0 \leq D_t \leq D_{max}, \quad 0 \leq P_{imp,t} \leq P_{imp,max}, \quad 0 \leq P_{exp,t} \leq P_{exp,max}$$
+$$C_t, L_t \geq 0 \quad \forall t \in T$$
 
-2. **Export power:** $\frac{\partial \mathcal{L}}{\partial P_{exp,t}} = -(\lambda_t - \tau_{exp}) + \mu_t = 0$
-   - **Interpretation:** When exporting, $\mu_t = \lambda_t - \tau_{exp}$ (marginal value equals export revenue)
+**Important Note:** There is **no daily energy requirement constraint**. Deviations from the reference load $D_{ref,t}$ are penalized through the discomfort cost $\alpha \sum_t L_t$ in the objective function. This allows complete temporal flexibility while accounting for comfort preferences.
 
-3. **Load consumption:** $\frac{\partial \mathcal{L}}{\partial D_t} = \mu_t + \omega_{1,t} - \omega_{2,t} = 0$
-   - **Interpretation:** Marginal energy value balanced with discomfort dual variables
+### Task ii: Dual Problem, Lagrangian and KKT
 
-4. **PV curtailment:** $\frac{\partial \mathcal{L}}{\partial C_t} = \mu_t + \nu_t = 0$
-   - **Interpretation:** When curtailing, $\nu_t = -\mu_t$ (opportunity cost of unused PV)
+#### The Lagrangian
 
-5. **Discomfort:** $\frac{\partial \mathcal{L}}{\partial L_t} = \alpha - \omega_{1,t} - \omega_{2,t} = 0$
-   - **Interpretation:** Discomfort penalty equals sum of binding constraint duals
+We formulate the Lagrangian with the following Lagrange multipliers:
+
+- $\pi_t$: For the power balance constraint (equality), $\pi_t \in \mathbb{R}$
+- $\mu_t$: For the curtailment limit constraint, $\mu_t \geq 0$
+- $\omega_{1,t}$: For the discomfort upper bound constraint, $\omega_{1,t} \geq 0$
+- $\omega_{2,t}$: For the discomfort lower bound constraint, $\omega_{2,t} \geq 0$
+
+Additionally, variable bounds are enforced through dual multipliers $\sigma^D_t, \sigma^C_t, \sigma^{P_{imp}}_t, \sigma^{P_{exp}}_t, \sigma^L_t \geq 0$ for non-negativity constraints, and $\theta^{P_{imp}}_t, \theta^{P_{exp}}_t, \Delta_t \geq 0$ for upper bound constraints.
+
+The Lagrangian becomes:
+
+$$
+\begin{align}
+\mathcal{L} &= \sum_{t=1}^{T} \left[ P_{imp,t}(\tau_{imp} + \lambda_t) - P_{exp,t}(\lambda_t - \tau_{exp}) + \alpha L_t \right] \\
+&+ \sum_{t=1}^{T} \pi_t \left( P_{imp,t} - P_{exp,t} - D_t + P^{PV}_t - C_t \right) \\
+&+ \sum_{t=1}^{T} \mu_t \left( C_t - P^{PV}_t \right) \\
+&+ \sum_{t=1}^{T} \omega_{1,t} \left( D_t - D_{ref,t} - L_t \right) \\
+&+ \sum_{t=1}^{T} \omega_{2,t} \left( -D_t + D_{ref,t} - L_t \right) \\
+&+ \text{(bound constraint terms)}
+\end{align}
+$$
+
+#### KKT Stationarity Conditions
+
+At optimality, the gradient of the Lagrangian with respect to each primal variable must equal zero. This yields the following stationarity conditions:
+
+$$\frac{\partial \mathcal{L}}{\partial P_{imp,t}} = (\tau_{imp} + \lambda_t) + \pi_t + \theta^{P_{imp}}_t - \sigma^{P_{imp}}_t = 0$$
+
+$$\frac{\partial \mathcal{L}}{\partial P_{exp,t}} = -(\lambda_t - \tau_{exp}) - \pi_t + \theta^{P_{exp}}_t - \sigma^{P_{exp}}_t = 0$$
+
+$$\frac{\partial \mathcal{L}}{\partial D_t} = -\pi_t + \omega_{1,t} - \omega_{2,t} + \Delta_t - \sigma^D_t = 0$$
+
+$$\frac{\partial \mathcal{L}}{\partial C_t} = -\pi_t + \mu_t - \sigma^C_t = 0$$
+
+$$\frac{\partial \mathcal{L}}{\partial L_t} = \alpha - \omega_{1,t} - \omega_{2,t} - \sigma^L_t = 0$$
+
+When constraints are not binding (strictly feasible), the corresponding dual variables are zero due to complementary slackness. For active constraints, we obtain:
+
+**When importing** ($P_{imp,t} > 0$ and at capacity): $\pi_t = \tau_{imp} + \lambda_t$
+
+**When exporting** ($P_{exp,t} > 0$ and at capacity): $\pi_t = \lambda_t - \tau_{exp}$
+
+**For discomfort:** $\omega_{1,t} + \omega_{2,t} = \alpha$ (when $L_t > 0$)
+
+**For curtailment:** $\mu_t = \pi_t$ (when $C_t < P^{PV}_t$, i.e., curtailment is active)
 
 ### Economic Interpretation of Dual Variables
 
