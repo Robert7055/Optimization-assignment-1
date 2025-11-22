@@ -1,0 +1,29 @@
+{
+  "6": {
+    "pv": 0.15,
+    "ref_load": 1.44,
+    "opt_load": 0.0,
+    "import": 0.0,
+    "export": 0.42,
+    "mu": 0.61,
+    "base_price": 1.01
+  },
+  "12": {
+    "pv": 0.75,
+    "ref_load": 1.05,
+    "opt_load": 0.0,
+    "import": 0.0,
+    "export": 2.55,
+    "mu": 0.7,
+    "base_price": 1.1
+  },
+  "18": {
+    "pv": 0.15,
+    "ref_load": 2.7,
+    "opt_load": 0.0,
+    "import": 0.0,
+    "export": 0.75,
+    "mu": 1.1,
+    "base_price": 1.5
+  }
+}

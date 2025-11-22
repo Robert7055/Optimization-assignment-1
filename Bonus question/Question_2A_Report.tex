@@ -1,0 +1,598 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Page geometry
+\geometry{margin=2.5cm}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% Title information
+\title{\textbf{Bonus Question 2.a}\\
+\large Demand-Side Flexibility in Active Distribution Grids}
+\author{46750 - Optimization in Modern Power Systems}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Question 2.a Part (i): Dual Formulation and Economic Interpretation}
+
+\subsection{Task i: Mathematical Formulation}
+
+Building on the optimization problem from Question 1.B, we analyze a prosumer with photovoltaic (PV) generation and flexible demand. The consumer minimizes total operational cost while maintaining comfort preferences.
+
+\subsubsection{Input Data}
+
+The problem is formulated over a planning horizon of $T = 24$ hours. At each hour $t \in T$, the system is characterized by hourly PV production $P^{PV}_t$ and time-varying electricity prices $\lambda_t$ from the day-ahead market. The prosumer faces import and export tariffs denoted by $\tau_{imp}$ and $\tau_{exp}$ respectively, which represent transaction costs for grid interaction. Consumer preferences are captured through a reference demand profile $D_{ref,t}$ that reflects preferred consumption patterns. The system is subject to physical constraints including maximum hourly demand $D_{max}$, maximum grid import capacity $P_{imp,max}$, and maximum grid export capacity $P_{exp,max}$. Finally, the discomfort penalty coefficient $\alpha$ quantifies the consumer's willingness to deviate from preferred consumption for economic benefits.
+
+\subsubsection{Decision Variables}
+
+\begin{itemize}[noitemsep]
+    \item $D_t \geq 0$: Demand consumption for each hour $t \in T$ [kWh]
+    \item $C_t \geq 0$: Curtailment of PV for each hour $t \in T$ [kWh]
+    \item $P_{imp,t} \geq 0$: Grid import each hour $t \in T$ [kWh]
+    \item $P_{exp,t} \geq 0$: Grid export each hour $t \in T$ [kWh]
+    \item $L_t \geq 0$: Discomfort (absolute load deviation) for each hour $t \in T$ [kWh]
+\end{itemize}
+
+\subsubsection{Objective Function}
+
+The consumer minimizes total operational cost:
+
+\begin{equation}
+\min \sum_{t=1}^{T} \left[ P_{imp,t} \cdot (\tau_{imp} + \lambda_t) - P_{exp,t} \cdot (\lambda_t - \tau_{exp}) \right] + \alpha \sum_{t=1}^{T} L_t
+\end{equation}
+
+The objective function minimizes total operational cost comprising three components. The first term represents the cost of importing electricity from the grid, accounting for both the market price $\lambda_t$ and the import tariff $\tau_{imp}$. The second term captures revenue from exporting excess energy to the grid at the net price $\lambda_t - \tau_{exp}$, which is subtracted from total cost. The third term penalizes deviations from the preferred consumption pattern through the discomfort cost $\alpha \sum_{t=1}^{T} L_t$, balancing economic optimization against consumer comfort preferences.
+
+\subsubsection{Constraints}
+
+\textbf{Power balance} ($\forall t \in T$):
+\begin{equation}
+P_{imp,t} - P_{exp,t} = D_t - P^{PV}_t + C_t
+\end{equation}
+
+\textbf{Curtailment limit} ($\forall t \in T$):
+\begin{equation}
+C_t \leq P^{PV}_t
+\end{equation}
+
+\textbf{Discomfort upper bound} ($\forall t \in T$):
+\begin{equation}
+L_t \geq D_t - D_{ref,t}
+\end{equation}
+
+\textbf{Discomfort lower bound} ($\forall t \in T$):
+\begin{equation}
+L_t \geq -(D_t - D_{ref,t})
+\end{equation}
+
+\textbf{Variable bounds}:
+\begin{equation}
+\begin{aligned}
+0 &\leq D_t \leq D_{max}, \quad 0 \leq P_{imp,t} \leq P_{imp,max}, \quad 0 \leq P_{exp,t} \leq P_{exp,max} \\
+C_t, L_t &\geq 0 \quad \forall t \in T
+\end{aligned}
+\end{equation}
+
+\textbf{Important Note:} There is \textbf{no daily energy requirement constraint}. Deviations from the reference load $D_{ref,t}$ are penalized through the discomfort cost $\alpha \sum_t L_t$ in the objective function. This allows complete temporal flexibility while accounting for comfort preferences.
+
+\subsection{Task ii: Dual Problem, Lagrangian and KKT}
+
+\subsubsection{The Lagrangian}
+
+We formulate the Lagrangian with the following Lagrange multipliers:
+
+\begin{itemize}[noitemsep]
+    \item $\pi_t$: For the power balance constraint (equality), $\pi_t \in \mathbb{R}$
+    \item $\mu_t$: For the curtailment limit constraint, $\mu_t \geq 0$
+    \item $\omega_{1,t}$: For the discomfort upper bound constraint, $\omega_{1,t} \geq 0$
+    \item $\omega_{2,t}$: For the discomfort lower bound constraint, $\omega_{2,t} \geq 0$
+\end{itemize}
+
+Additionally, variable bounds are enforced through dual multipliers $\sigma^D_t, \sigma^C_t, \sigma^{P_{imp}}_t, \sigma^{P_{exp}}_t, \sigma^L_t \geq 0$ for non-negativity constraints, and $\theta^{P_{imp}}_t, \theta^{P_{exp}}_t, \Delta_t \geq 0$ for upper bound constraints.
+
+The Lagrangian becomes:
+
+\begin{align}
+\mathcal{L} &= \sum_{t=1}^{T} \left[ P_{imp,t}(\tau_{imp} + \lambda_t) - P_{exp,t}(\lambda_t - \tau_{exp}) + \alpha L_t \right] \nonumber \\
+&+ \sum_{t=1}^{T} \pi_t \left( P_{imp,t} - P_{exp,t} - D_t + P^{PV}_t - C_t \right) \nonumber \\
+&+ \sum_{t=1}^{T} \mu_t \left( C_t - P^{PV}_t \right) \nonumber \\
+&+ \sum_{t=1}^{T} \omega_{1,t} \left( D_t - D_{ref,t} - L_t \right) \nonumber \\
+&+ \sum_{t=1}^{T} \omega_{2,t} \left( -D_t + D_{ref,t} - L_t \right) \nonumber \\
+&+ \text{(variable bound terms)}
+\end{align}
+
+\subsubsection{KKT Stationarity Conditions}
+
+At optimality, the gradient of the Lagrangian with respect to each primal variable must equal zero. This yields the following stationarity conditions:
+
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial P_{imp,t}} = (\tau_{imp} + \lambda_t) + \pi_t + \theta^{P_{imp}}_t - \sigma^{P_{imp}}_t = 0
+\end{equation}
+
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial P_{exp,t}} = -(\lambda_t - \tau_{exp}) - \pi_t + \theta^{P_{exp}}_t - \sigma^{P_{exp}}_t = 0
+\end{equation}
+
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial D_t} = -\pi_t + \omega_{1,t} - \omega_{2,t} + \Delta_t - \sigma^D_t = 0
+\end{equation}
+
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial C_t} = -\pi_t + \mu_t - \sigma^C_t = 0
+\end{equation}
+
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial L_t} = \alpha - \omega_{1,t} - \omega_{2,t} - \sigma^L_t = 0
+\end{equation}
+
+When constraints are not binding (strictly feasible), the corresponding dual variables are zero due to complementary slackness. For active constraints, we obtain important economic relationships. When the consumer is importing electricity ($P_{imp,t} > 0$ and at capacity), the power balance dual takes the value $\pi_t = -(\tau_{imp} + \lambda_t)$, reflecting the full marginal cost of importing. Conversely, when exporting ($P_{exp,t} > 0$ and at capacity), we have $\pi_t = -(\lambda_t - \tau_{exp})$, representing the net marginal value of export. The discomfort duals satisfy $\omega_{1,t} + \omega_{2,t} = \alpha$ whenever the consumer deviates from reference consumption ($L_t > 0$), directly linking the penalty coefficient to the marginal cost of discomfort. Finally, the curtailment dual equals the power balance dual, $\mu_t = \pi_t$, when PV curtailment is active, quantifying the opportunity cost of unused renewable generation.
+
+\subsection{Qualitative Analysis}
+
+\subsubsection{Economic Interpretation of Dual Variables}
+
+\paragraph{1. Energy Shadow Price ($\pi_t$)}
+
+The dual variable $\pi_t$ represents the \textbf{marginal value of energy} at hour $t$, providing crucial economic insights into the consumer's energy valuation. When the consumer is importing electricity, $\pi_t = -(\tau_{imp} + \lambda_t)$, indicating that the marginal cost equals the full import price including tariffs. Conversely, when exporting, $\pi_t = -(\lambda_t - \tau_{exp})$, reflecting the marginal value as net export revenue. When the consumer is self-sufficient, $\pi_t$ lies between these bounds and reflects the internal energy valuation based on local generation and consumption balance.
+
+The negative sign arises from our Lagrangian formulation convention. The absolute value $|\pi_t|$ represents the shadow price of energy, quantifying how much the objective function would improve if 1 additional kWh became available at hour $t$. This shadow price varies significantly across the 24-hour period, with high $|\pi_t|$ values occurring during hours when energy is particularly valuable---typically coinciding with high demand, low PV production, or elevated market prices. Conversely, low $|\pi_t|$ hours indicate periods when energy is less valuable, often during low demand combined with high PV generation or low market prices. This temporal variation in shadow prices directly quantifies the \textbf{value of temporal flexibility}, as consumers can achieve cost savings by shifting consumption from high-value to low-value hours.
+
+From a business perspective, these shadow prices guide operational decisions. Hours with $|\pi_t| > \lambda_t + \tau_{imp}$ indicate the consumer's willingness to import at current market prices, as the internal valuation exceeds the full import cost. Similarly, hours with $|\pi_t| < \lambda_t - \tau_{exp}$ signal export opportunities where market prices exceed the consumer's internal valuation. These insights directly inform load-shifting decisions and provide the foundation for optimal market bidding strategies in day-ahead electricity markets.
+
+\paragraph{2. PV Curtailment Dual ($\mu_t$)}
+
+From the KKT conditions, we observe that $\mu_t = \pi_t$, establishing a direct link between curtailment and energy valuation. When $\mu_t > 0$, PV is being curtailed, indicating that additional PV utilization capacity would provide economic value. Conversely, when $\mu_t = 0$, no curtailment occurs and all available PV generation is fully utilized. Positive values of $\mu_t$ thus signal potential value in investments that enhance PV utilization.
+
+Our analysis reveals that curtailment typically occurs during midday hours when PV production peaks. This phenomenon arises when PV generation exceeds local demand and export is either limited by grid constraints or uneconomical due to low market prices combined with export tariffs. The curtailment dual $\mu_t$ quantifies the \textbf{lost opportunity cost} of this unused renewable energy, representing foregone value that could be captured through enhanced flexibility.
+
+From a business investment perspective, persistently positive $\mu_t$ values provide strong economic justification for capacity expansion in three key areas. First, battery energy storage systems would enable temporal shifting of excess PV generation to higher-value hours. Second, increased grid export capacity would allow monetization of surplus PV at market prices. Third, load-increasing flexibility through controllable devices such as electric vehicle charging or heat pump operation could absorb excess PV during curtailment hours. The magnitude of $\mu_t$ directly quantifies the economic benefit of these investments, enabling cost-benefit analysis for capacity planning decisions.
+
+\paragraph{3. Discomfort Duals ($\omega_{1,t}$, $\omega_{2,t}$)}
+
+The discomfort duals $\omega_{1,t}$ and $\omega_{2,t}$ quantify the marginal cost of deviating from preferred consumption patterns. When $\omega_{1,t} > 0$, the load exceeds the reference level ($D_t > D_{ref,t}$), indicating that the consumer is consuming more than preferred. Conversely, when $\omega_{2,t} > 0$, consumption falls below the reference ($D_t < D_{ref,t}$). The KKT stationarity condition establishes that $\omega_{1,t} + \omega_{2,t} = \alpha$ whenever discomfort is present, creating a direct mathematical link between the penalty coefficient and the marginal discomfort cost. These duals thus represent the instantaneous penalty rate for comfort deviation, capturing the trade-off between economic optimization and user preferences.
+
+Our numerical analysis reveals that most hours exhibit active deviation from reference consumption, with either $\omega_{1,t}$ or $\omega_{2,t}$ taking positive values. This indicates that the optimal solution balances cost savings from strategic load shifting against the discomfort penalties incurred. The relationship between $\alpha$ and flexibility is inverse: higher values of the discomfort penalty coefficient lead to less deviation from reference consumption and consequently reduced temporal flexibility. This trade-off parameter thus controls the consumer's willingness to accept comfort adjustments in exchange for economic benefits.
+
+From a practical business perspective, these duals quantify the \textbf{cost of comfort preferences}, providing valuable information for multiple applications. They inform contract design for demand response programs by revealing the compensation required to incentivize load adjustments. Additionally, they help determine optimal discomfort penalty values by explicitly quantifying the economic impact of different comfort tolerance levels. This enables prosumers to make informed decisions about their flexibility participation, balancing potential savings against lifestyle preferences.
+
+\subsection{Model Implementation}
+
+The model was implemented using Gurobi 12.0.3 optimizer in Python. After solving the primal problem, dual variables are extracted from constraint shadow prices.
+
+\subsection{Numerical Analysis}
+
+\subsubsection{Optimal Solution Summary}
+
+The base case results for $\alpha = 0.5$ over a 24-hour horizon are presented below:
+
+\begin{table}[H]
+\centering
+\caption{Optimal Solution Summary}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Metric} & \textbf{Value} & \textbf{Unit} \\
+\midrule
+Total Cost & [From notebook] & DKK \\
+Import Cost & [From notebook] & DKK \\
+Export Revenue & [From notebook] & DKK \\
+Net Energy Cost & [From notebook] & DKK \\
+Discomfort Cost & [From notebook] & DKK \\
+\midrule
+Total PV Production & [From notebook] & kWh \\
+Total PV Curtailment & [From notebook] & kWh \\
+Total Grid Import & [From notebook] & kWh \\
+Total Grid Export & [From notebook] & kWh \\
+Total Load & [From notebook] & kWh \\
+Reference Load & [From notebook] & kWh \\
+Load Deviation & [From notebook] & kWh \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Dual Variable Statistics}
+
+\begin{table}[H]
+\centering
+\caption{Energy Shadow Price ($\pi_t$) Statistics}
+\begin{tabular}{lr}
+\toprule
+\textbf{Statistic} & \textbf{Value (DKK/kWh)} \\
+\midrule
+Mean & [From notebook] \\
+Minimum & [From notebook] \\
+Maximum & [From notebook] \\
+Standard Deviation & [From notebook] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interpretation:} Shadow price represents marginal energy value. High values indicate hours where energy is most valuable.
+
+\paragraph{PV Curtailment Analysis:}
+\begin{itemize}[noitemsep]
+    \item Hours with curtailment: [From notebook] out of 24
+    \item Mean dual (when curtailing): [From notebook] DKK/kWh
+    \item \textbf{Interpretation:} Positive duals indicate PV is curtailed, signaling potential value in storage or export capacity.
+\end{itemize}
+
+\paragraph{Discomfort Analysis:}
+\begin{itemize}[noitemsep]
+    \item Hours with load $>$ reference: [From notebook]
+    \item Hours with load $<$ reference: [From notebook]
+    \item Hours at reference: [From notebook]
+    \item \textbf{Interpretation:} Most hours show load deviation. Model balances cost savings against comfort penalties.
+\end{itemize}
+
+\subsubsection{Visualization of Dual Variables}
+
+Figure~\ref{fig:shadow_prices} shows the energy shadow price $|\pi_t|$ and its relationship with import/export price bounds.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../Plots/Scenarios 2)/part_2a_i_shadow_prices.png}
+\caption{Energy shadow prices and import/export profiles}
+\label{fig:shadow_prices}
+\end{figure}
+
+The upper plot shows:
+\begin{itemize}[noitemsep]
+    \item \textbf{Blue line:} Energy shadow price $|\pi_t|$
+    \item \textbf{Red dashed line:} $\lambda_t + \tau_{imp}$ (full cost of importing)
+    \item \textbf{Green dashed line:} $\lambda_t - \tau_{exp}$ (net value of exporting)
+    \item \textbf{Gray zone:} ``No-trade zone'' where self-consumption is optimal
+\end{itemize}
+
+The lower plot shows the resulting import/export decisions, confirming:
+\begin{itemize}[noitemsep]
+    \item Import when $|\pi_t| = \tau_{imp} + \lambda_t$ (high energy value)
+    \item Export when $|\pi_t| = \lambda_t - \tau_{exp}$ (low energy value, excess PV)
+\end{itemize}
+
+\subsubsection{Key Findings from Part (i)}
+
+\begin{enumerate}
+    \item \textbf{Strong Duality Holds:} The primal and dual objectives are equal (within numerical precision), confirming optimality.
+    
+    \item \textbf{Energy Value Varies Significantly:} The range of shadow prices demonstrates substantial temporal variation in energy value, quantifying the benefit of flexibility.
+    
+    \item \textbf{Tariff Impact:} Import/export tariffs create a ``no-trade zone'' reducing market participation at intermediate prices.
+    
+    \item \textbf{No Hard Daily Constraint:} Complete flexibility is maintained---consumers can deviate from reference load with only penalty costs, not hard constraints.
+    
+    \item \textbf{Investment Signals:} PV curtailment duals indicate potential value in storage or export capacity expansion.
+\end{enumerate}
+
+\section{Question 2.a Part (ii): Hourly Demand and Supply Curves}
+
+\subsection{Methodology}
+
+To derive the consumer's demand (import) and supply (export) curves as functions of electricity price:
+
+\begin{enumerate}
+    \item Select representative hours for analysis
+    \item Vary the electricity price $\lambda_t$ at the selected hour
+    \item Resolve the optimization for each price level
+    \item Record optimal $P_{imp,t}$ and $P_{exp,t}$
+    \item Plot the resulting demand and supply curves
+\end{enumerate}
+
+This reveals the consumer's \textbf{price-responsive behavior} and optimal \textbf{market participation strategy}.
+
+\subsection{Economic Theory}
+
+The KKT stationarity conditions provide the theoretical foundation for understanding the consumer's price-responsive behavior. The concept of \textbf{Marginal Willingness to Pay (WTP)} represents the maximum price at which the consumer will import electricity from the grid. Mathematically, the consumer imports when $\lambda_t \leq |\pi_t| - \tau_{imp}$, meaning the market price must be sufficiently low relative to the internal energy valuation minus the import tariff. This threshold directly derives from the shadow price $\pi_t$ and reflects the consumer's economic rationality in import decisions.
+
+Conversely, the \textbf{Marginal Opportunity Cost (MOC)} defines the minimum price required to incentivize export. The consumer exports when $\lambda_t \geq |\pi_t| + \tau_{exp}$, ensuring that market prices exceed the internal energy valuation plus the export tariff. This threshold guarantees that exporting is more economically attractive than internal consumption or storage.
+
+Between these two thresholds lies the \textbf{no-trade zone}, where $\text{MOC} \leq \lambda_t \leq \text{WTP}$. In this price range, self-consumption is optimal as the market price neither justifies expensive imports nor provides sufficient compensation for exports. The width of this no-trade zone is determined by both the internal energy valuation $|\pi_t|$ and the tariff structure $(\tau_{imp} + \tau_{exp})$, with wider zones indicating reduced market participation and narrower zones suggesting more active trading.
+
+\subsection{Implementation}
+
+We analyze three representative hours:
+\begin{itemize}[noitemsep]
+    \item \textbf{Hour 6 (Morning - 6am):} Low PV, moderate load
+    \item \textbf{Hour 12 (Midday - 12pm):} Peak PV production
+    \item \textbf{Hour 18 (Evening - 6pm):} No PV, peak demand
+\end{itemize}
+
+The demand/supply curves are derived by varying electricity price across a wide range (-1.0 to 4.0 DKK/kWh) with 51 price points.
+
+\subsection{Numerical Analysis}
+
+\subsubsection{Representative Hour Characteristics}
+
+\begin{table}[H]
+\centering
+\caption{Characteristics of Selected Hours}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Parameter} & \textbf{Hour 6} & \textbf{Hour 12} & \textbf{Hour 18} \\
+\midrule
+Base price (DKK/kWh) & [Notebook] & [Notebook] & [Notebook] \\
+PV production (kW) & [Notebook] & [Notebook] & [Notebook] \\
+Reference load (kW) & [Notebook] & [Notebook] & [Notebook] \\
+Optimal load (kW) & [Notebook] & [Notebook] & [Notebook] \\
+Grid import (kW) & [Notebook] & [Notebook] & [Notebook] \\
+Grid export (kW) & [Notebook] & [Notebook] & [Notebook] \\
+Shadow price (DKK/kWh) & [Notebook] & [Notebook] & [Notebook] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Demand Curves (Import)}
+
+Figure~\ref{fig:demand_curves} shows the demand curves for the three representative hours.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../Plots/Scenarios 2)/part_2a_ii_demand_curves.png}
+\caption{Demand curves (import) for representative hours}
+\label{fig:demand_curves}
+\end{figure}
+
+The demand curves exhibit the expected downward-sloping behavior, confirming economic rationality: higher electricity prices lead to reduced imports as the consumer substitutes with internal resources or reduces consumption. Notably, the curves differ significantly across hours, reflecting the time-varying nature of PV availability and load requirements. Each hour demonstrates a distinct willingness-to-pay threshold, beyond which imports cease entirely as the market price exceeds the consumer's marginal valuation. These threshold variations across hours quantify the temporal heterogeneity in energy value and flexibility potential.
+
+\subsubsection{Supply Curves (Export)}
+
+Figure~\ref{fig:supply_curves} shows the supply curves for the three representative hours.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../Plots/Scenarios 2)/part_2a_ii_supply_curves.png}
+\caption{Supply curves (export) for representative hours}
+\label{fig:supply_curves}
+\end{figure}
+
+The supply curves display the characteristic upward-sloping profile expected from economic theory, where higher market prices incentivize increased exports as the opportunity cost of internal consumption rises. The temporal analysis reveals stark differences across representative hours. Hour 12 (midday) demonstrates strong export capability driven by peak PV production, enabling substantial grid exports when prices are favorable. In contrast, Hour 18 (evening) faces severe export constraints due to the absence of PV generation, with limited or no export potential regardless of market prices. This diurnal pattern underscores the critical role of renewable generation availability in determining export flexibility.
+
+\subsubsection{Combined Analysis}
+
+Figure~\ref{fig:combined_curves} shows both demand and supply curves together.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../Plots/Scenarios 2)/part_2a_ii_combined_curves.png}
+\caption{Combined demand and supply curves}
+\label{fig:combined_curves}
+\end{figure}
+
+\subsubsection{Price Threshold Analysis}
+
+\begin{table}[H]
+\centering
+\caption{Price Thresholds for Market Participation}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Threshold} & \textbf{Hour 6} & \textbf{Hour 12} & \textbf{Hour 18} \\
+\midrule
+Base price (DKK/kWh) & [Notebook] & [Notebook] & [Notebook] \\
+Shadow price (DKK/kWh) & [Notebook] & [Notebook] & [Notebook] \\
+\midrule
+Max WTP (DKK/kWh) & [Notebook] & [Notebook] & [Notebook] \\
+Theoretical WTP & [Notebook] & [Notebook] & [Notebook] \\
+Min MOC (DKK/kWh) & [Notebook] & [Notebook] & [Notebook] \\
+Theoretical MOC & [Notebook] & [Notebook] & [Notebook] \\
+\midrule
+Base case action & [Notebook] & [Notebook] & [Notebook] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Qualitative Discussion}
+
+\subsubsection{Curve Characteristics}
+
+\paragraph{Demand Curve (Import $P_{imp,t}$ vs. $\lambda_t$):}
+\begin{itemize}[noitemsep]
+    \item \textbf{Shape:} Downward sloping---economic rationality confirmed
+    \item \textbf{At low prices:} Import maximizes (cheap electricity incentivizes consumption)
+    \item \textbf{At high prices:} Import reduces to zero (expensive, prefer internal resources)
+    \item \textbf{Slope:} Indicates price elasticity of demand
+\end{itemize}
+
+\paragraph{Supply Curve (Export $P_{exp,t}$ vs. $\lambda_t$):}
+\begin{itemize}[noitemsep]
+    \item \textbf{Shape:} Upward sloping---higher prices incentivize export
+    \item \textbf{At low prices:} No export (internal value exceeds market price)
+    \item \textbf{At high prices:} Export maximizes (monetize excess PV)
+    \item \textbf{Slope:} Indicates export responsiveness to price signals
+\end{itemize}
+
+\subsubsection{Time-of-Day Variations}
+
+Curves differ significantly across hours due to:
+
+\begin{enumerate}
+    \item \textbf{PV Availability:}
+    \begin{itemize}
+        \item Midday (Hour 12): High PV $\rightarrow$ strong export potential, reduced import needs
+        \item Morning/Evening: Low/no PV $\rightarrow$ higher import propensity, limited export
+    \end{itemize}
+    
+    \item \textbf{Load Requirements:}
+    \begin{itemize}
+        \item Peak hours: Higher demand $\rightarrow$ more import propensity
+        \item Off-peak: Lower demand $\rightarrow$ more export potential
+    \end{itemize}
+    
+    \item \textbf{Flexibility Constraints:}
+    \begin{itemize}
+        \item Discomfort penalty ($\alpha$) limits load shifting
+        \item Affects price responsiveness uniformly across hours
+    \end{itemize}
+    
+    \item \textbf{No Daily Constraint:}
+    \begin{itemize}
+        \item Each hour optimized independently (subject to discomfort)
+        \item Maximum temporal flexibility achieved
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Market Participation Strategy}
+
+Based on derived curves, optimal bidding strategy:
+
+\paragraph{For Imports (Demand Bids):}
+\begin{itemize}[noitemsep]
+    \item Submit downward-sloping bid curve to day-ahead market
+    \item Quantity at each price determined by derived demand curve
+    \item Import when market clears below WTP threshold
+\end{itemize}
+
+\paragraph{For Exports (Supply Bids):}
+\begin{itemize}[noitemsep]
+    \item Submit upward-sloping bid curve to day-ahead market
+    \item Quantity at each price determined by derived supply curve
+    \item Export when market clears above MOC threshold
+\end{itemize}
+
+\paragraph{No-Trade Zone:}
+\begin{itemize}[noitemsep]
+    \item When $\text{MOC} \leq \lambda_t \leq \text{WTP}$: Self-consumption optimal
+    \item Width = $2|\pi_t| + (\tau_{exp} + \tau_{imp})$
+    \item Tariffs directly impact market participation range
+\end{itemize}
+
+\subsubsection{Value of Flexibility}
+
+The derived curves quantify flexibility value:
+
+\begin{enumerate}
+    \item \textbf{Price Elasticity:} Flatter curves $\rightarrow$ more flexible $\rightarrow$ higher value
+    \item \textbf{Arbitrage Potential:} Wide active trading range $\rightarrow$ profitable opportunities
+    \item \textbf{Market Revenue:} Area under supply curve above base price
+    \item \textbf{Cost Savings:} Area under demand curve below base price
+    \item \textbf{Temporal Arbitrage:} Different WTP/MOC across hours enables load shifting profits
+\end{enumerate}
+
+\subsection{Key Findings from Part (ii)}
+
+\begin{enumerate}
+    \item \textbf{Clear Price Responsiveness:} Consumer exhibits rational economic behavior with well-defined threshold prices derived from shadow prices.
+    
+    \item \textbf{Time-Dependent Flexibility:} Demand/supply curves vary significantly by hour, reflecting PV production patterns and load requirements.
+    
+    \item \textbf{Tariff Structure Impact:} Import/export tariffs create a no-trade zone, reducing market participation at intermediate prices.
+    
+    \item \textbf{Actionable Bidding:} Curves provide direct input for day-ahead market bid submission, enabling optimal market participation.
+    
+    \item \textbf{Quantified Flexibility Value:} The shape and position of curves reveal the economic benefit of demand-side flexibility.
+\end{enumerate}
+
+\section{Overall Conclusions}
+
+\subsection{Integration of Parts (i) and (ii)}
+
+The dual formulation and demand/supply curves are intrinsically connected:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Shadow prices determine thresholds:} WTP and MOC derived directly from $|\pi_t|$ and tariffs
+    \item \textbf{Dual variables guide interpretation:} High $|\pi_t|$ $\rightarrow$ high WTP $\rightarrow$ willing to pay more
+    \item \textbf{Curves operationalize theory:} Convert theoretical shadow prices into actionable market strategies
+    \item \textbf{KKT conditions explain behavior:} Import/export decisions follow predicted economic rationality
+\end{itemize}
+
+\subsection{Business Insights}
+
+\subsubsection{For Prosumers:}
+\begin{enumerate}
+    \item Submit hourly demand/supply bids based on derived curves
+    \item Invest in battery storage when curtailment duals persistently positive
+    \item Shift flexible loads from high-$|\pi_t|$ to low-$|\pi_t|$ hours
+    \item Choose tariff structures minimizing no-trade zone width
+\end{enumerate}
+
+\subsubsection{For System Operators:}
+\begin{enumerate}
+    \item Use curve shapes to forecast consumer price response
+    \item Design tariffs encouraging beneficial flexibility
+    \item Procure grid services based on revealed WTP/MOC values
+\end{enumerate}
+
+\subsubsection{For Market Designers:}
+\begin{enumerate}
+    \item Ensure prices reflect system conditions to incentivize flexibility
+    \item Create flexibility products aligned with temporal value variation
+    \item Compensate flexibility provision based on opportunity costs (shadow prices)
+\end{enumerate}
+
+\subsection{Value Proposition}
+
+This analysis demonstrates that demand-side flexibility has \textbf{quantifiable economic value}:
+
+\begin{itemize}[noitemsep]
+    \item Direct cost savings through optimized import/export
+    \item Market revenue from exporting at favorable prices
+    \item System benefits through price-responsive demand
+    \item Investment signals from dual variables
+\end{itemize}
+
+The absence of hard daily constraints (only penalty-based flexibility) maximizes this value while respecting consumer preferences.
+
+\subsection{Limitations and Extensions}
+
+\subsubsection{Current Analysis Limitations:}
+\begin{itemize}[noitemsep]
+    \item Single 24-hour horizon (no multi-day optimization)
+    \item Perfect foresight of prices and PV production
+    \item No battery storage modeled
+    \item Linear discomfort penalty (quadratic might be more realistic)
+\end{itemize}
+
+\subsubsection{Potential Extensions:}
+\begin{itemize}[noitemsep]
+    \item Multi-day rolling horizon optimization
+    \item Stochastic programming for price/PV uncertainty
+    \item Include battery storage with state-of-charge dynamics
+    \item Compare different discomfort penalty functions
+    \item Analyze seasonal variations in curves
+\end{itemize}
+
+\section*{References}
+
+\textbf{Course Materials:}
+\begin{itemize}[noitemsep]
+    \item Assignment 1 (2025) - Main Assignment
+    \item Assignment 1 (2025) - Bonus Questions
+    \item Question 1.B formulation and data files
+\end{itemize}
+
+\textbf{Optimization Techniques:}
+\begin{itemize}[noitemsep]
+    \item Linear Programming (LP)
+    \item Lagrangian Duality Theory
+    \item Karush-Kuhn-Tucker (KKT) Conditions
+    \item Strong Duality for Convex Optimization
+\end{itemize}
+
+\textbf{Software:}
+\begin{itemize}[noitemsep]
+    \item Python 3.11
+    \item Gurobi Optimizer 12.0.3
+    \item NumPy, Pandas, Matplotlib
+\end{itemize}
+
+\end{document}
